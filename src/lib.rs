@@ -39,7 +39,7 @@ impl<'a, T: acid_io::Read> BitReader<'a, T> {
     }
 
     #[inline]
-    pub fn read_bits<T: core::ops::ShlAssign + core::ops::BitOr + From<u8>>(&mut self) -> acid_io::Result<T> {
+    pub fn read_bits<T: core::ops::ShlAssign + core::ops::BitOr + From<u8>>(&mut self, mut bits: u8) -> acid_io::Result<T> {
         Ok(if bits < 8 - self.offset {
             self.fill_buffer()?;
             let v = T::from(self.buffer) << self.offset >> (8 - bits);

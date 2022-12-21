@@ -1,5 +1,6 @@
 #![no_std]
 
+use core::any::Any;
 use core::cmp::min;
 use acid_io::Read;
 
@@ -42,9 +43,9 @@ impl<'a, T: acid_io::Read> BitReader<'a, T> {
     pub fn read_bits<T: core::ops::ShlAssign + core::ops::BitOr + From<u8>>(&mut self, mut bits: u8) -> acid_io::Result<T> {
         Ok(if bits < 8 - self.offset {
             self.fill_buffer()?;
-            let v = T::from(self.buffer) << self.offset >> (8 - bits);
+            let v = self.buffer << self.offset >> (8 - bits);
             self.offset += bits;
-            v
+            T::from(v)
         } else {
             let mut v = T::from(self.buffer) << self.offset >> self.offset;
             self.offset = 8;
@@ -55,9 +56,41 @@ impl<'a, T: acid_io::Read> BitReader<'a, T> {
                 bits -= 8;
             }
             self.fill_buffer()?;
-            let v = T::from(self.buffer) << self.offset >> (8 - bits);
+            let v = self.buffer << self.offset >> (8 - bits);
             self.offset += bits;
-            v
+            T::from(v)
         })
     }
 }
+
+fn a(a: impl Fn(bool) -> ()) {
+
+}
+
+fn b() {
+    a()
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

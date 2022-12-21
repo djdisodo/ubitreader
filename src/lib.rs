@@ -11,7 +11,7 @@ pub struct BitReader<'a, T: acid_io::Read> {
 }
 
 impl<'a, T: acid_io::Read> BitReader<'a, T> {
-    pub fn new(inner: &mut T) -> Self {
+    pub fn new(inner: &'a mut T) -> Self {
         Self {
             offset: 8,
             buffer: 0,
@@ -40,38 +40,28 @@ impl<'a, T: acid_io::Read> BitReader<'a, T> {
     }
 
     #[inline]
-    pub fn read_bits<T: core::ops::ShlAssign + core::ops::BitOr + From<u8>>(&mut self, mut bits: u8) -> acid_io::Result<T> {
+    pub fn read_bits<U: core::ops::ShlAssign + core::ops::BitOrAssign + From<u8>>(&mut self, mut bits: u8) -> acid_io::Result<U> {
         Ok(if bits < 8 - self.offset {
             self.fill_buffer()?;
             let v = self.buffer << self.offset >> (8 - bits);
             self.offset += bits;
-            T::from(v)
+            U::from(v)
         } else {
-            let mut v = T::from(self.buffer) << self.offset >> self.offset;
+            let mut v = U::from(self.buffer << self.offset >> self.offset);
             self.offset = 8;
             while bits > 8 {
                 self.fill_buffer()?;
-                v <<= T::from(8);
-                v &= T::from(self.buffer);
+                v <<= U::from(8);
+                v |= U::from(self.buffer);
                 bits -= 8;
             }
             self.fill_buffer()?;
-            let v = self.buffer << self.offset >> (8 - bits);
+            v |= U::from(self.buffer << self.offset >> (8 - bits));
             self.offset += bits;
-            T::from(v)
+            v
         })
     }
 }
-
-fn a(a: impl Fn(bool) -> ()) {
-
-}
-
-fn b() {
-    a()
-}
-
-
 
 
 
